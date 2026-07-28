@@ -1,0 +1,4 @@
+interface:
+  display_name: "Cursor IDE Dev Agent"
+  short_description: "Coordinate manual Cursor IDE coding sessions"
+  default_prompt: "Use $cursor-ide-dev-agent to coordinate manual Cursor IDE agent sessions with paste-ready task prompts and Codex review."
