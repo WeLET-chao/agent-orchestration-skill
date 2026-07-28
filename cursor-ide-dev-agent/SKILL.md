@@ -1,10 +1,6 @@
 ---
 name: cursor-ide-dev-agent
-description: >-
-  Coordinate manual Cursor IDE agent sessions when the primary agent cannot
-  start Cursor CLI/tmux: create paste-ready task packets, define parallel
-  session boundaries, tell the user which Cursor IDE sessions to open or
-  continue, and review returned diffs/artifacts before checkpointing.
+description: "Coordinate manual Cursor IDE agent sessions when the primary agent cannot start Cursor CLI/tmux: create paste-ready task packets, define parallel session boundaries, tell the user which Cursor IDE sessions to open or continue, and review returned diffs/artifacts before checkpointing."
 ---
 
 # Cursor IDE Dev Agent
