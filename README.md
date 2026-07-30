@@ -51,6 +51,7 @@ agent-orchestration/
   repo-daily-summary/
     SKILL.md
     agents/openai.yaml
+    assets/repo-daily-summary-template.pptx
     scripts/find_latest_daily_summary.py
 ```
 

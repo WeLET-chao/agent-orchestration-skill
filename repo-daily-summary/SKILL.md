@@ -86,8 +86,37 @@ If the user explicitly requests one page, keep the same sections but retain
 only the highest-signal bullets. If the user requests a narrative daily report,
 use the same evidence hierarchy without slide labels.
 
-## Resource
+## PPTX Template
+
+When the user requests a PowerPoint file, start from
+`assets/repo-daily-summary-template.pptx`. Preserve its 16:9 master, typography,
+footer placement, and page structure instead of rebuilding the design.
+
+- **Slide 1 — weekly/multi-repo summary**: group the highest-signal work under
+  major progress, supporting progress, and next priorities. Summarize
+  workstreams rather than listing commits.
+- **Slide 2 — reporting date**: show the week/date and presenter identity.
+- **Slide 3 — single-repo summary**: use one page per repository with
+  Objective, Implemented, Results, and Next.
+
+For a multi-repo weekly deck, use slides 1 and 2, then duplicate slide 3 once
+per repository. For a single-repo daily deck, use the date page and one
+single-repo page; include slide 1 only when an overall summary is useful.
+
+Replace every bracketed placeholder. Keep Objective to one sentence,
+Implemented and Results to at most three bullets each, and Next to at most two
+bullets. Do not shrink text to fit excessive content; remove lower-value detail
+instead.
+
+## Resources
 
 `scripts/find_latest_daily_summary.py` prints the latest
 `daily_summary_*.md` in a target directory so a new report can focus on the
 delta instead of repeating unchanged background.
+
+`assets/repo-daily-summary-template.pptx` is the canonical PowerPoint template
+for weekly multi-repo and single-repo advisor updates.
+
+`assets/report-wangchao-layout-reference.pptx` preserves the original
+three-slide layout example. Use it only to audit the visual design; generate
+new reports from the canonical template above.
