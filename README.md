@@ -1,6 +1,8 @@
 # agent-orchestration skills
 
-Cross-repo **agent delegation and supervision** workflows: external CLIs, tmux sessions, git worktrees, audit logs, and review checkpoints.
+Cross-repo **agent delegation, supervision, and progress reporting** workflows:
+external CLIs, tmux sessions, git worktrees, audit logs, review checkpoints,
+and advisor-ready repository summaries.
 
 ## Table of contents
 
@@ -15,6 +17,7 @@ Cross-repo **agent delegation and supervision** workflows: external CLIs, tmux s
 | `cursor-dev-agent` | Supervise Cursor `agent` CLI as an implementation subagent (tmux, worktrees, audit, no-commit guardrails) |
 | `cursor-ide-dev-agent` | Coordinate manual Cursor IDE agent sessions with paste-ready task packets when CLI/tmux orchestration is unavailable |
 | `claude-dev-agent` | Supervise Claude Code CLI as an implementation subagent (tmux/headless, worktrees, audit, no-commit guardrails) |
+| `repo-daily-summary` | Translate current repository evidence into concise, advisor-ready PPT bullets or a daily progress report |
 
 Use `cursor-dev-agent` when you can start `agent` in tmux or headless mode. Use
 `cursor-ide-dev-agent` when the user opens or continues Cursor IDE sessions
@@ -45,6 +48,10 @@ agent-orchestration/
   claude-dev-agent/
     SKILL.md
     agents/openai.yaml
+  repo-daily-summary/
+    SKILL.md
+    agents/openai.yaml
+    scripts/find_latest_daily_summary.py
 ```
 
 Future siblings (e.g. `external-agent-cli`) belong in this group when migrated.
