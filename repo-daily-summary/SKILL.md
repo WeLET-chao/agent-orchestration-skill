@@ -91,6 +91,9 @@ use the same evidence hierarchy without slide labels.
 When the user requests a PowerPoint file, start from
 `assets/repo-daily-summary-template.pptx`. Preserve its 16:9 master, typography,
 footer placement, and page structure instead of rebuilding the design.
+Run the bundled tools through the skill-local uv project (`uv sync --locked`
+once, then `uv run ...`) so template editing uses the pinned Python 3.12
+environment.
 
 - **Slide 1 — weekly/multi-repo summary**: group the highest-signal work under
   major progress, supporting progress, and next priorities. Summarize
@@ -108,14 +111,38 @@ Implemented and Results to at most three bullets each, and Next to at most two
 bullets. Do not shrink text to fit excessive content; remove lower-value detail
 instead.
 
+### PDF Delivery
+
+After creating a PPTX, convert it to a same-name PDF by default:
+
+```bash
+uv run scripts/convert_pptx_to_pdf.py /path/to/report.pptx --force
+```
+
+Return both paths to the user. The conversion is part of completion: verify
+that the PDF is non-empty and has the same page count as the PPTX. If
+LibreOffice/soffice is unavailable, report the missing converter as a blocker;
+do not silently deliver only the PPTX unless the user explicitly opts out of
+PDF generation.
+
 ## Resources
 
 `scripts/find_latest_daily_summary.py` prints the latest
 `daily_summary_*.md` in a target directory so a new report can focus on the
 delta instead of repeating unchanged background.
 
+`scripts/convert_pptx_to_pdf.py` converts a completed PPTX with headless
+LibreOffice and verifies its PDF page count when `pdfinfo` is available.
+
+`pyproject.toml` and `uv.lock` define the Python 3.12 environment used for PPTX
+editing and conversion orchestration. LibreOffice remains the native rendering
+engine and must be installed separately.
+
 `assets/repo-daily-summary-template.pptx` is the canonical PowerPoint template
 for weekly multi-repo and single-repo advisor updates.
+
+`assets/repo-daily-summary-template.pdf` is the converted preview used to
+review the canonical template without opening PowerPoint.
 
 `assets/report-wangchao-layout-reference.pptx` preserves the original
 three-slide layout example. Use it only to audit the visual design; generate
