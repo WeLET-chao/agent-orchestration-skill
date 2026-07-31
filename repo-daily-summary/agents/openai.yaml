@@ -1,4 +1,0 @@
-interface:
-  display_name: "Repo Daily Summary"
-  short_description: "Create advisor-ready daily repository progress slides."
-  default_prompt: "Use $repo-daily-summary to summarize this repository into concise advisor-ready PPT bullets."
