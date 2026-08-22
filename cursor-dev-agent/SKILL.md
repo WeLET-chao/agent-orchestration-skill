@@ -205,7 +205,16 @@ After Cursor stops or reports completion:
 4. Run focused tests yourself.
 5. Inspect regenerated artifacts when relevant.
 6. For visual artifact tasks, verify that the artifact visibly improved and at least one problem class was actually fixed. Reject or correct results that only pass tests/gates while the image is unchanged or the claimed fix is not visible.
-7. Either provide a correction task to the same session, restart from checkpoint if the context is polluted, or make a checkpoint commit if the diff is acceptable.
+7. Classify each discovered problem before assigning a correction:
+   - **Task/session error:** the governing contract and automated checks are sufficient, but this session did not follow them. Correct or restart the session.
+   - **Harness enforcement gap:** the behavior is forbidden by the contract but invalid output passed automated validation. Fix the harness and add a regression test; a stronger prompt alone is insufficient.
+   - **Skill or task-packet gap:** the expected behavior was not stated clearly enough for the delegated agent. Update the reusable skill or task template as well as the active session instruction.
+   - **Architecture or contract gap:** the system has no authoritative rule or ownership boundary for the case. Update the governing design document/schema before implementing a local convention.
+   - **External-tool or environment issue:** the implementation is correct but a provider, simulator, dependency, credential, or machine resource is unavailable or incompatible. Record the real blocker; do not disguise it with a fixture or fallback.
+   - **Domain-result failure:** the tooling ran correctly but the produced circuit, document extraction, model, or other domain artifact is invalid or poor quality. Preserve the result as evidence and improve the generating/feedback process rather than patching the artifact silently.
+8. Apply the correction at every responsible layer. A problem may require both a session correction and a reusable harness/skill fix. Do not treat these choices as mutually exclusive.
+9. Apply a durable-correction gate before acceptance. For a harness, skill/task-packet, architecture, or contract gap, verify that the owning repository now contains the applicable contract/schema change and regression test. If the gap concerns delegation or review behavior, update the reusable skill/task template too. A chat message, continuation prompt, scratch task packet, or passing one-off command alone does not close the issue. Report the durable file and test paths in the review result.
+10. Either provide the resulting correction task to the same session, restart from checkpoint if the context is polluted, launch a separate owner task when the defect belongs elsewhere, or make a checkpoint commit if the diff is acceptable.
 
 Only commit after primary-agent review and verification.
 
