@@ -41,6 +41,12 @@ Before starting a Cursor task:
    - Mark each task as `parallel-safe`, `serial-after-review`, or `plan-only`.
    - Explain dependency edges in plain language, especially when tasks would edit the same files or rely on the same generated artifacts.
    - Prefer launching every genuinely independent `parallel-safe` task in its own worktree/session.
+   - If representative or end-to-end acceptance depends on an upstream artifact
+     that has not passed review, classify that acceptance as `serial-after-review`.
+     A synthetic fixture may exercise an algorithm invariant, but it must be
+     labeled synthetic and cannot substitute for the missing upstream artifact,
+     satisfy the representative-case hard stop, or pass merely by proving its
+     invented input infeasible.
    - Do not launch new implementation sessions when existing sessions already produced reviewable diffs that must be reviewed first.
 5. Name a hard stop point for each task.
 6. Run an authority-readiness check when behavior is defined outside the repository, such as by a file format, protocol, compiler, EDA tool, simulator, provider API, or pinned dependency:
