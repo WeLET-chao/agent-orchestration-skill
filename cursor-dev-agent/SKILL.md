@@ -19,6 +19,12 @@ Responsibilities:
 - Cursor must use the default Cursor agent auto model only. Do not pass model flags or ask it to switch models.
 - Cursor may run in yolo mode, but it must not commit.
 - Cursor output must be logged under a scratch/audit directory, normally `.scratch/cursor_logs/`.
+- Task artifacts, rendered evidence, and primary-review conversions must be
+  written inside the task's own worktree, normally under
+  `.scratch/cursor_artifacts/<task>/`. Do not use `/tmp`, the main worktree, or
+  another task worktree as the reviewable artifact location. A system temporary
+  file may exist only during one command and must be copied or moved into the
+  owning task worktree before inspection or reporting.
 - Treat `/loop` fallback as a scheduling tick only; it is not technical fallback or degraded implementation.
 - When multiple independent implementation tasks exist, prefer parallel Cursor sessions in separate git worktrees over serializing work in one session.
 - When the user asks for status, next steps, or what can be assigned, the primary agent should proactively identify parallelizable work instead of waiting for the user to ask "what can run in parallel?"
@@ -208,6 +214,9 @@ Implementation requirements:
 Verification:
 - <test commands>
 - <artifact commands>
+- Write every reviewable artifact and any primary-review PNG/SVG conversion
+  under this task worktree's `.scratch/cursor_artifacts/<task>/`; do not report
+  `/tmp` paths as task evidence.
 - For external contracts: cite the authority/version, run the real-tool or pinned-source conformance check, and include a negative check when practical.
 - For visual artifact tasks: regenerate the target PNG/SVG or equivalent artifacts, report exact paths and mtimes, and identify at least one visible problem class that changed. If the artifact is visually unchanged, keep working or report the task as blocked rather than complete.
 
@@ -242,6 +251,9 @@ After Cursor stops or reports completion:
 4. For externally defined behavior, trace every new mapping, token table, transform, or protocol assumption to its declared normative source. Reject implementations that infer the rule from desired acceptance results or cite a local adapter as the authority.
 5. Run focused tests yourself, including an available negative or mutation check that proves the conformance test can fail.
 6. Inspect regenerated artifacts when relevant.
+   Keep primary-review conversions, crops, screenshots, and annotated outputs
+   in the same task worktree's `.scratch/cursor_artifacts/<task>/`, not `/tmp`
+   or the main worktree.
 7. For visual artifact tasks, verify that the artifact visibly improved and at least one problem class was actually fixed. Reject or correct results that only pass tests/gates while the image is unchanged or the claimed fix is not visible.
 8. Classify each discovered problem before assigning a correction:
    - **Task/session error:** the governing contract and automated checks are sufficient, but this session did not follow them. Correct or restart the session.
