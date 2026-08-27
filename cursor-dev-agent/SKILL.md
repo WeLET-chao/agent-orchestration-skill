@@ -63,6 +63,10 @@ Before starting a Cursor task:
 7. Prepare each task prompt with scope, allowed files, forbidden actions, verification, artifacts, report format, and the authority/evidence information above when applicable.
 8. If the task depends on repo policy, require Cursor to read `AGENTS.md`, project context docs, relevant design docs/issues, and touched code entry points.
 
+Before delegating a correction after a failed or stalled implementation, apply
+the Failure-Diagnosis Gate below. A new session is not a substitute for finding
+the owning defect.
+
 Restart Cursor from the checkpoint instead of continuing a polluted session if it confuses active code with legacy code, proposes fallback/repair as the main path when the project forbids it, rewrites unrelated files, edits tests to hide failures, or cannot summarize touched files and verification.
 
 Also restart with a rewritten complete task packet when review reveals that the original task lacked a material source of truth, assigned the problem to the wrong architectural layer, or caused repeated implementation from an invalid premise. Do not accumulate follow-up prompts on top of a materially obsolete task definition.
@@ -181,6 +185,12 @@ Context:
 - Primary agent will review your diff and create checkpoints.
 - Read: AGENTS.md, project context docs, <relevant ADRs/design docs/issues>, <code entry points>.
 
+Failure diagnosis, when this task corrects a rejected or stalled attempt:
+- Observed failure and evidence: <smallest real reproducer, artifact, command, and measured result>
+- Root cause and owning layer: <agent output | harness | skill/task packet | architecture/contract | external tool/environment | domain result>
+- Rejected approaches: <attempts that evidence shows will not solve the cause>
+- Technical route: <why the requested change addresses the owning defect>
+
 Sources of truth (when external semantics are involved):
 - Normative: <exact document/API/source path and version or revision>
 - Corroborating only: <local adapters/examples that cannot define behavior>
@@ -212,6 +222,8 @@ Implementation requirements:
 - If any required case fails, final command/result must make that visible.
 
 Verification:
+- Fast red-capable check: <command that reproduces the failure before the change>
+- Green acceptance: <observable result required after the change>
 - <test commands>
 - <artifact commands>
 - Write every reviewable artifact and any primary-review PNG/SVG conversion
@@ -241,6 +253,49 @@ Known issues / blockers
 - concrete file/function references
 ```
 
+## Failure-Diagnosis Gate
+
+Do not immediately send another implementation prompt when review finds a
+repeated failure, sharply rising runtime, a representative case that still
+cannot complete, synthetic tests passing while the real workflow fails, or
+changes that repeatedly cross architectural ownership boundaries. First:
+
+1. Stop the implementation loop at the current evidence point. Preserve the
+   diff, log, command, generated artifact, and typed failure; do not increase
+   budgets or add another heuristic merely to continue.
+2. Reproduce the symptom with the smallest real input that preserves it. Use a
+   fast red-capable check when possible, and distinguish mathematical
+   infeasibility from timeout, bounded-search exhaustion, and poor output.
+3. Classify ownership using the Review Loop categories below. List a small set
+   of falsifiable hypotheses, vary one factor at a time, and collect evidence
+   that rules alternatives in or out.
+4. Decide whether the root cause is a local implementation defect, missing
+   upstream capability, invalid problem formulation or ownership boundary,
+   external environment failure, or a valid but poor domain result.
+5. Define the viable technical route before delegation: what remains valid,
+   what must stop, which contract or module changes, and what real acceptance
+   result proves the correction. Record durable architecture or contract
+   changes in the owning repository before asking an agent to invent local
+   behavior.
+
+Only after this diagnosis choose one execution path:
+
+- Send a focused follow-up to the same session only for a local defect when its
+  original task premise remains valid and its context is clean.
+- Restart from the reviewed checkpoint with a complete rewritten task packet
+  when the premise, contract, or owning layer changed, or the session context
+  is polluted.
+- Launch a separate owner task when the required correction belongs to an
+  upstream contract, harness, or another repository.
+- Report the architecture, environment, or domain blocker instead of assigning
+  speculative implementation when no authorized feasible correction is known.
+
+A correction task is ready only when it states the observed evidence, root
+cause, owning layer, rejected approaches, technical route, fast red-capable
+check, and green acceptance result. “Try more rounds,” “use a larger page,”
+“raise the solver budget,” or “add a fallback” is not a diagnosis unless
+targeted evidence establishes it as the actual correction.
+
 ## Review Loop
 
 After Cursor stops or reports completion:
@@ -265,6 +320,11 @@ After Cursor stops or reports completion:
 9. Apply the correction at every responsible layer. A problem may require both a session correction and a reusable harness/skill fix. Do not treat these choices as mutually exclusive.
 10. Apply a durable-correction gate before acceptance. For a harness, skill/task-packet, architecture, or contract gap, verify that the owning repository now contains the applicable contract/schema change and regression test. If the gap concerns delegation or review behavior, update the reusable skill/task template too. A chat message, continuation prompt, scratch task packet, or passing one-off command alone does not close the issue. Report the durable file and test paths in the review result.
 11. Either provide the resulting correction task to the same session, restart from checkpoint if the context is polluted, launch a separate owner task when the defect belongs elsewhere, or make a checkpoint commit if the diff is acceptable.
+
+If the review reaches a Failure-Diagnosis Gate trigger, complete that gate
+before step 11. A typed failure or diagnostic orchestrator can be accepted as a
+bounded diagnostic capability only when its task contract explicitly says so;
+it is not evidence that the representative application result succeeded.
 
 Only commit after primary-agent review and verification.
 
