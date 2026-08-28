@@ -225,6 +225,11 @@ Implementation requirements:
   Use a new timestamped log path for every run; never overwrite the first
   failing log with a retry. A failing test followed by `EXIT=0` from `tee` is a
   harness failure and cannot be reported as green evidence.
+- Prefer avoiding a pipeline for authoritative acceptance: redirect the test
+  command to its unique log, capture `$?` immediately, append that status, then
+  display the saved log. If a pipeline is necessary, use the active shell's
+  actual status mechanism (`$pipestatus` in zsh, `PIPESTATUS` in bash) and test
+  it with a deliberately failing command before trusting the harness.
 
 Verification:
 - Fast red-capable check: <command that reproduces the failure before the change>
@@ -313,6 +318,8 @@ After Cursor stops or reports completion:
    For piped commands, verify `pipefail` was active and that each run has its
    own immutable log. Reject evidence whose exit status came from `tee` or
    whose first failure log was overwritten by a later run.
+   Also reject a nominal `pipefail` setup that uses another shell's status
+   variable and therefore records an empty or false-success exit code.
 6. Inspect regenerated artifacts when relevant.
    Keep primary-review conversions, crops, screenshots, and annotated outputs
    in the same task worktree's `.scratch/cursor_artifacts/<task>/`, not `/tmp`
