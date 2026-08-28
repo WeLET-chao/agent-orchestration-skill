@@ -220,6 +220,11 @@ Implementation requirements:
 - Prefer parallel processing for independent cases where safe.
 - Failed cases must produce explicit diagnostics; successful artifacts should remain.
 - If any required case fails, final command/result must make that visible.
+- When a verification command is piped through `tee`, enable `pipefail` and
+  record the test process exit status rather than the final pipeline command.
+  Use a new timestamped log path for every run; never overwrite the first
+  failing log with a retry. A failing test followed by `EXIT=0` from `tee` is a
+  harness failure and cannot be reported as green evidence.
 
 Verification:
 - Fast red-capable check: <command that reproduces the failure before the change>
@@ -305,6 +310,9 @@ After Cursor stops or reports completion:
 3. Review the actual diff, not only the summary.
 4. For externally defined behavior, trace every new mapping, token table, transform, or protocol assumption to its declared normative source. Reject implementations that infer the rule from desired acceptance results or cite a local adapter as the authority.
 5. Run focused tests yourself, including an available negative or mutation check that proves the conformance test can fail.
+   For piped commands, verify `pipefail` was active and that each run has its
+   own immutable log. Reject evidence whose exit status came from `tee` or
+   whose first failure log was overwritten by a later run.
 6. Inspect regenerated artifacts when relevant.
    Keep primary-review conversions, crops, screenshots, and annotated outputs
    in the same task worktree's `.scratch/cursor_artifacts/<task>/`, not `/tmp`
