@@ -22,6 +22,16 @@ The expected default model is currently
 `deepseek-official/deepseek-v4-flash`. Verify the composed configuration with
 `dsh --dump-config`; do not infer the effective model from a task prompt.
 
+`--sandbox read-only` prohibits file modifications; it does not restrict reads
+outside the workspace. A primary-owned native probe on rc.13 read a harmless
+outside-workspace file, while the same probe under the circuit runner's `bwrap`
+wrapper could read its assigned file and received `FS_NOT_FOUND` for the outside
+file. Record native permission posture separately from OS read visibility; do
+not claim native read isolation merely because all artifacts agree on a flag.
+Verify composed configuration using a YAML structure parser, rejecting duplicate
+model/config keys and unresolved model expressions. A matching string inside a
+dump is not enough evidence that the effective model configuration was verified.
+
 Before the first long Dsh task on a host, also verify that the composed TUI
 profile enables semantic context compaction and tool-result pruning. Disk
 compression of a session log is not model-context compaction. If host-local
