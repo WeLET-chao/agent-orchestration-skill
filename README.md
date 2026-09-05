@@ -13,14 +13,15 @@ sessions, git worktrees, audit logs, and review checkpoints.
 
 | Skill | Purpose |
 |-------|---------|
-| `cursor-dev-agent` | Supervise Cursor `agent` CLI as an implementation subagent (tmux, worktrees, audit, no-commit guardrails) |
+| `external-dev-agent` | Supervise Cursor, Dsh, agy, Claude, OpenCode, or Copilot through one task-packet/worktree/tmux/review workflow with provider profiles |
 | `cursor-ide-dev-agent` | Coordinate manual Cursor IDE agent sessions with paste-ready task packets when CLI/tmux orchestration is unavailable |
 | `claude-dev-agent` | Supervise Claude Code CLI as an implementation subagent (tmux/headless, worktrees, audit, no-commit guardrails) |
 
-Use `cursor-dev-agent` when you can start `agent` in tmux or headless mode. Use
-`cursor-ide-dev-agent` when the user opens or continues Cursor IDE sessions
-manually and the primary agent prepares prompts plus review checkpoints. Use
-`claude-dev-agent` when delegation should run through Claude Code CLI.
+Use `external-dev-agent` for CLI-driven implementation or review. Select its
+Cursor, Dsh, agy, Claude, OpenCode, or Copilot provider profile while retaining
+one common task-packet and primary-review lifecycle. Use `cursor-ide-dev-agent`
+when the user opens or continues Cursor IDE sessions manually. Use
+`claude-dev-agent` only for its existing Claude-specific workflow.
 
 ## Quick start
 
@@ -37,9 +38,11 @@ Use from any project after the skill is linked under `~/.agents/skills/` (or you
 
 ```text
 agent-orchestration/
-  cursor-dev-agent/
+  external-dev-agent/
     SKILL.md
-    agents/openai.yaml    # optional Codex UI metadata
+    agents/openai.yaml
+    references/           # provider profiles and task-packet contract
+    scripts/              # provider-specific deterministic wrappers
   cursor-ide-dev-agent/
     SKILL.md
     agents/openai.yaml
@@ -47,5 +50,3 @@ agent-orchestration/
     SKILL.md
     agents/openai.yaml
 ```
-
-Future siblings (e.g. `external-agent-cli`) belong in this group when migrated.

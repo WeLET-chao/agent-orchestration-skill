@@ -1,0 +1,4 @@
+interface:
+  display_name: "External Dev Agent"
+  short_description: "Supervise external CLI agents in isolated worktrees"
+  default_prompt: "Use $external-dev-agent to delegate and supervise this development task with an appropriate external CLI provider."

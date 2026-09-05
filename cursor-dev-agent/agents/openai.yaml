@@ -1,4 +1,0 @@
-interface:
-  display_name: "Cursor Dev Agent"
-  short_description: "Run Cursor as a supervised coding subagent"
-  default_prompt: "Use $cursor-dev-agent to start a supervised Cursor development task in tmux."
