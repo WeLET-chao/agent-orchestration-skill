@@ -40,6 +40,22 @@ composed result instead of assuming the override loaded. Exercise `/compact`
 once in a disposable session and confirm that the TUI reports compacted
 context.
 
+### Reusing environment verification
+
+Keep a task-local verification record with the host, CLI version, selected
+model, effective profile/configuration, execution mode, account identity (no
+credentials), and paths to smoke/compaction results. Later tasks can reference
+that record when those inputs are unchanged; do not repeat the disposable
+`/compact` exercise or model smoke merely because a new task packet was written.
+Check current configuration/version and live session state before relying on it.
+
+Repeat affected checks after a CLI upgrade, model/profile/account change, host
+change, or a failure that calls the previous result into question. An account or
+quota problem requires a fresh availability check after recovery; a compaction
+configuration change requires renewed compaction verification. Missing evidence
+means the original first-use checks still apply. A previous smoke proves the
+recorded invocation worked, not that quota or service availability remains valid.
+
 ## Interactive Development
 
 ```bash
@@ -79,5 +95,7 @@ controls. Do not use resume to change the task objective or worktree.
 
 If Dsh keeps restating an already concrete plan without editing, send one short
 steering message to begin implementation and stay within the task packet. If it
-still does not progress, preserve the session evidence and restart from the
-reviewed checkpoint instead of accumulating prompts.
+still does not progress, inspect pending input/tools and provider failures as
+described in the main skill. If a restart is needed, preserve the diff, untracked
+outputs, packet, and job state before starting from the reviewed checkpoint;
+carry forward valid results instead of accumulating prompts or repeating work.

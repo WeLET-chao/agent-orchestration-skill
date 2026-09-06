@@ -27,8 +27,9 @@ runtime adapters that invoke models inside a product or experiment.
 
 ## Provider Selection
 
-Choose a provider deliberately. Smoke-test the selected CLI before assigning a
-long task, and do not silently replace a requested provider.
+Choose a provider deliberately. Establish that the selected CLI works before
+assigning a long task, using a smoke test or reusable verification evidence as
+specified by its profile. Do not silently replace a requested provider.
 
 | Provider | Typical use | Required reference |
 | --- | --- | --- |
@@ -58,8 +59,9 @@ Before delegation:
 6. For externally defined behavior, record the normative source and version,
    real verification environment, and a negative conformance check when
    practical. Local examples are corroborating evidence, not authority.
-7. Create one branch/worktree per implementation task. Multiple agents must
-   never edit the same worktree.
+7. For a new implementation task, create one branch/worktree. For a continuation
+   of the same task, inspect its existing diff, evidence, and live jobs and reuse
+   the assigned worktree. Multiple agents must never edit the same worktree.
 8. Create the task packet described in
    [references/task-packet.md](references/task-packet.md). Name a concrete hard
    stop and reviewable outputs.
@@ -69,7 +71,9 @@ Before delegation:
 ## Start And Submit
 
 Start the selected provider from the assigned worktree in a deterministically
-named tmux session. Use the command in its provider reference.
+named tmux session, or resume the existing task using its provider's supported
+mechanism. Check for a live worker before launching another. Use the command in
+its provider reference.
 
 Wait until the provider input prompt is visible. Submit a short instruction:
 
@@ -85,20 +89,41 @@ Attach a task-local pane log. Do not use `/tmp` as the durable location for
 reviewable evidence. Temporary process files must be moved into the task
 worktree before reporting.
 
+Record the exact command, worktree, provider session ID (when available), tmux
+pane or process/job ID, log path, expected report/artifacts, and completion
+condition. Attach logging before submitting the task so startup failures are
+captured. For headless runs, record the process exit status; for interactive
+runs, task completion does not require the TUI process to exit.
+
 ## Supervision
 
 - Let an actively working session continue. Do not inject repeated status
   prompts merely because a task is long.
 - Inspect observable pane state, worktree changes, test logs, and artifacts at
-  reasonable intervals.
+  reasonable intervals. Distinguish working, waiting for input, failed, ready
+  for primary review, and accepted. An idle prompt or a provider's "done" message
+  alone cannot establish acceptance.
 - If a session remains in repeated planning after it has enough evidence and a
   concrete design, send one bounded steering instruction to begin the edits and
-  remain within the task packet. Do not rewrite the task interactively.
+  remain within the task packet. If it still repeats the plan, inspect whether
+  input was submitted, a tool is pending, or the provider has failed before
+  deciding to resume or restart. Do not accumulate identical steering prompts.
 - If a provider reports quota/authentication/eligibility failure, preserve the
   evidence and classify it as an external environment issue. Resume or switch
   providers only when authorized, with provider identity recorded.
 - A scheduling loop is only a scheduling mechanism. It must not introduce
   degraded technical behavior, fallback algorithms, or invented artifacts.
+- Follow the task through its completion condition and primary review, or report
+  a concrete blocker with preserved evidence. Starting a background job is not
+  delivery. Use bounded waits and the available asynchronous job mechanism so
+  the primary agent can observe progress and receive user updates.
+- Answer status questions without dropping supervision. When the user changes
+  the task, update the packet and inform the worker; verify it has stopped any
+  incompatible writes before assigning overlapping work. Do not send an update
+  into a busy terminal as though it were a ready input prompt.
+- At handoff, record active jobs, accepted/provisional outputs, remaining checks,
+  and the next concrete action. Recheck live state when resuming; stale logs do
+  not prove that a process is still running or has finished.
 
 ## Failure Diagnosis
 
@@ -115,9 +140,22 @@ runtime explosion, or cross-repository defect:
    unless evidence identifies them as the real correction.
 5. Record durable contract or architecture changes in the owning repository.
 
+Each correction names the failed command/case, observed result, root-cause
+hypothesis, requested change, and check that can disprove the fix. When premise
+and ownership are unchanged, keep the correction within the existing capability
+task instead of opening a new task for each assertion or terminal failure.
+Do not retry an unchanged deterministic failure. Retry a transient provider or
+tool failure only with a reason and a bounded attempt/time budget; first check
+that the previous job is no longer active to avoid duplicate work.
+
 Continue the same session only for a local defect whose task premise and
 context remain valid. Start from a clean reviewed checkpoint with a rewritten
 task packet when the premise, authority, ownership, or architecture changes.
+Before replacing the session/worktree, preserve tracked and untracked changes,
+the current packet, logs, test results, artifacts, and active-job state. The new
+packet identifies what remains valid, what must be rechecked, and what must not
+be reused. Carry forward accepted work and evidence deliberately; do not copy an
+unreviewed diff into a clean task as though it were an accepted baseline.
 
 ## Review And Integration
 
@@ -126,13 +164,19 @@ When a provider reports completion or presents a reviewable diff:
 1. Read its final report and audit log.
 2. Inspect `git status --short`, `git diff --stat`, and the actual diff.
 3. Trace external mappings and protocol assumptions to their normative source.
-4. Run focused tests yourself, including a red-capable negative check where
-   practical. Never trust a piped command whose recorded status came from
-   `tee`; preserve each failing log before retrying.
-5. Inspect real generated artifacts. A fixture or smoke test proves tooling,
-   not representative application quality.
-6. For visual work, inspect rendered output and require a visible improvement,
-   not only passing tests.
+4. Verify according to the task type. For implementation, run the focused checks
+   needed to establish the changed behavior; use negative checks for concrete
+   invariants, not as a ritual. For read-only review, verify findings against
+   source/evidence without requiring a code diff or implementation tests. For
+   documentation, check instructions, links, and relevant command examples.
+   Never trust a piped command whose recorded status came from `tee`; preserve
+   each failing log before retrying.
+5. Inspect real generated artifacts when the task requires them. A fixture or
+   smoke test proves tooling, not representative application quality. Required
+   real-case acceptance cannot be replaced by a collection of small tests.
+6. For visual generation, inspect the requested rendered result. Require visible
+   improvement over a baseline only for a visual-improvement task. A visual
+   review delivers evidence-backed findings, not an edited artifact.
 7. Apply corrections at every responsible layer. If the task exposed a
    reusable delegation gap, update this skill or its provider profile as well
    as the active task.
@@ -140,6 +184,12 @@ When a provider reports completion or presents a reviewable diff:
 9. Remove completed worktrees and sessions only after their diff is accepted,
    intentionally discarded, or preserved elsewhere. Keep required audit
    artifacts.
+
+Once the declared acceptance checks and primary review pass, integrate and
+report. Repeat or broaden verification only for new changes, failures, or a
+specific unresolved correctness concern; do not add surprise requirements after
+each passing report. Record which revision/artifact the evidence covers and
+which required checks remain blocked or unrun.
 
 Report outcomes in practical domain language: what works, what remains invalid
 or blocked, distance to the real goal, and concrete evidence. Distinguish code

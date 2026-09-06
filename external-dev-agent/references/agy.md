@@ -25,6 +25,24 @@ The wrapper adds `--dangerously-skip-permissions` for headless operation and
 preserves the pseudo-TTY transcript. Keep output and logs in the assigned
 worktree.
 
+Relative prompt, output, log, and additional-directory paths resolve from
+`--workdir`, not the shell that launches the wrapper. Supply exactly one `-p` or
+`-f`. Explicit output/log paths must be new files; use a fresh run directory for
+each retry. The default transcript path is unique per invocation.
+
+`--out` captures combined terminal output, including diagnostics and possible
+control sequences; it is not a structured assistant-only response. The wrapper
+preserves the CLI exit status (GNU timeout normally returns 124 on timeout) and
+prints the transcript location even on failure. Inspect the transcript and task
+artifacts before treating a zero exit as task completion. A timeout does not
+prove that independently launched child jobs have stopped; check recorded jobs
+before retrying.
+
+Wrapper regression check (fake CLI, no provider calls): run
+`python3 scripts/test_run_agy_print.py` from this skill's directory. It exercises
+the actual PTY wrapper, argument/path handling, file preservation, failure exit
+codes, and timeout evidence.
+
 For an interactive development session, run `agy` in tmux with the task's
 authorized permission mode, submit the task-packet bootstrap after the TUI is
 ready, and record the exact model and effort separately from the `agy`
