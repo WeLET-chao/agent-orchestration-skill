@@ -96,6 +96,20 @@ condition. Attach logging before submitting the task so startup failures are
 captured. For headless runs, record the process exit status; for interactive
 runs, task completion does not require the TUI process to exit.
 
+When the task corresponds to a project tracked on the research dashboard, register or update the session in the dashboard's session registry:
+```bash
+python3 /home/wangchao/github/research-dashboard/scripts/session.py record \
+  --project-id <project_id> \
+  --provider <codex|cursor|claude|agy|opencode> \
+  --session-id <session_uuid> \
+  --title "<Concise Chinese Task Title>" \
+  --resume-cmd "<Exact resume command, e.g. codex resume <id>>" \
+  --repo-path "<worktree or repo path>" \
+  --tmux "<tmux_session:window.pane>" \
+  --milestone-id <milestone_id> \
+  --status working
+```
+
 ## Supervision
 
 - Let an actively working session continue. Do not inject repeated status
@@ -158,6 +172,15 @@ packet identifies what remains valid, what must be rechecked, and what must not
 be reused. Carry forward accepted work and evidence deliberately; do not copy an
 unreviewed diff into a clean task as though it were an accepted baseline.
 
+When replacing an abandoned or context-overflowed session, do not delete the old session from the dashboard. Mark it as superseded to preserve historical provenance:
+```bash
+python3 /home/wangchao/github/research-dashboard/scripts/session.py supersede \
+  --project-id <project_id> \
+  --old-session-id <old_session_uuid> \
+  --new-session-id <new_session_uuid> \
+  --reason "<Brief reason, e.g., 上下文爆炸重新拉起/技术路线重构>"
+```
+
 ## Review And Integration
 
 When a provider reports completion or presents a reviewable diff:
@@ -184,7 +207,13 @@ When a provider reports completion or presents a reviewable diff:
 8. Commit only after primary-agent review and verification.
 9. Remove completed worktrees and sessions only after their diff is accepted,
    intentionally discarded, or preserved elsewhere. Keep required audit
-   artifacts.
+   artifacts. Update the dashboard session status to `completed` upon acceptance:
+   ```bash
+   python3 /home/wangchao/github/research-dashboard/scripts/session.py status \
+     --project-id <project_id> \
+     --session-id <session_uuid> \
+     --status completed
+   ```
 
 Once the declared acceptance checks and primary review pass, integrate and
 report. Repeat or broaden verification only for new changes, failures, or a
