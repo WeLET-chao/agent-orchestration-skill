@@ -1,6 +1,6 @@
 ---
 name: external-dev-agent
-description: Delegate and supervise implementation or review work through external agent CLIs such as Cursor, DeepSeek Harness/dsh, agy, Claude, OpenCode, or Copilot using task packets, isolated worktrees, tmux, audit artifacts, and primary-agent review.
+description: Delegate and supervise implementation or review work through external agent CLIs such as Cursor, Codex DeepSeek (`codex -p deepseek`), agy, Claude, OpenCode, or Copilot using task packets, isolated worktrees, tmux, audit artifacts, and primary-agent review. DeepSeek Harness/dsh is deprecated.
 ---
 
 # External Dev Agent
@@ -34,9 +34,10 @@ specified by its profile. Do not silently replace a requested provider.
 | Provider | Typical use | Required reference |
 | --- | --- | --- |
 | Cursor `agent` | General interactive implementation | [references/cursor.md](references/cursor.md) |
-| DeepSeek Harness `dsh` | Long interactive implementation or bounded review | [references/dsh.md](references/dsh.md) |
+| Codex `codex -p deepseek` | Preferred DeepSeek interactive implementation or bounded review | [references/codex-deepseek.md](references/codex-deepseek.md) |
 | Antigravity `agy` | Gemini implementation/review, including visual work | [references/agy.md](references/agy.md) |
 | Claude, OpenCode, Copilot | Bounded implementation or review | [references/other-clis.md](references/other-clis.md) |
+| DeepSeek Harness `dsh` (deprecated) | Legacy recovery only; do not start new DeepSeek tasks | [references/dsh.md](references/dsh.md) |
 
 Read only the selected provider reference. For tasks spanning multiple
 providers, read each applicable profile and keep their worktrees separate.

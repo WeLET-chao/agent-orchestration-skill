@@ -1,4 +1,23 @@
-# DeepSeek Harness Provider Profile
+# DeepSeek Harness Provider Profile (Deprecated)
+
+**Deprecated.** Do not start new DeepSeek development or review tasks with
+`dsh`. Prefer Codex with the DeepSeek profile:
+
+- Provider profile: [codex-deepseek.md](codex-deepseek.md)
+- Launch: `codex -p deepseek`
+- Headless smoke/exec: `codex -p deepseek exec ...`
+
+Keep this document only for recovering an already-running Dsh session, reading
+legacy audit logs, or answering why an old task used Dsh. If the user
+explicitly requests `dsh` anyway, warn that it is deprecated, record that
+override in the task packet, and still prefer migrating the next task to Codex.
+
+---
+
+## Legacy reference
+
+The sections below are retained for historical recovery. They are not the
+current preferred DeepSeek path.
 
 Use the repository worktree as the working directory because Dsh derives its
 workspace root from the current directory.
