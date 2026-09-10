@@ -114,10 +114,24 @@ python3 /home/wangchao/github/research-dashboard/scripts/session.py record \
 
 - Let an actively working session continue. Do not inject repeated status
   prompts merely because a task is long.
+- Set the next inspection interval from the task's expected implementation and
+  verification time instead of polling continuously. After a well-scoped task
+  is submitted and observable work has started, wait about 10 minutes for a
+  medium implementation task (for example, schedule the next review 600
+  seconds later), and use a longer interval for clearly larger tasks. Shorten
+  the interval only when the worker is near its stated completion point, a
+  command is expected to finish soon, or there is evidence that primary-agent
+  input may be required. Use an asynchronous wait or scheduler when available;
+  do not occupy the foreground with a long blocking `sleep` that prevents user
+  updates.
 - Inspect observable pane state, worktree changes, test logs, and artifacts at
   reasonable intervals. Distinguish working, waiting for input, failed, ready
   for primary review, and accepted. An idle prompt or a provider's "done" message
-  alone cannot establish acceptance.
+  alone cannot establish acceptance. When a worker finishes its run and stops at
+  the task packet's hard stop, it is `ready for primary review` (awaiting review).
+  Do NOT mark the session as `completed` on the dashboard while it is merely
+  paused awaiting review. Do not keep completed or abandoned worker tmux sessions
+  running indefinitely under the guise of "audit preservation".
 - If a session remains in repeated planning after it has enough evidence and a
   concrete design, send one bounded steering instruction to begin the edits and
   remain within the task packet. If it still repeats the plan, inspect whether
@@ -172,14 +186,19 @@ packet identifies what remains valid, what must be rechecked, and what must not
 be reused. Carry forward accepted work and evidence deliberately; do not copy an
 unreviewed diff into a clean task as though it were an accepted baseline.
 
-When replacing an abandoned or context-overflowed session, do not delete the old session from the dashboard. Mark it as superseded to preserve historical provenance:
-```bash
-python3 /home/wangchao/github/research-dashboard/scripts/session.py supersede \
-  --project-id <project_id> \
-  --old-session-id <old_session_uuid> \
-  --new-session-id <new_session_uuid> \
-  --reason "<Brief reason, e.g., 上下文爆炸重新拉起/技术路线重构>"
-```
+When replacing an abandoned or context-overflowed session:
+1. Terminate the obsolete worker's tmux session to free resources and stop quota burn:
+   ```bash
+   tmux kill-session -t <old_tmux_session_name>
+   ```
+2. Do not delete the old session from the dashboard. Mark it as superseded to preserve historical provenance, and ensure its `tmux_session` is cleared to `null`:
+   ```bash
+   python3 /home/wangchao/github/research-dashboard/scripts/session.py supersede \
+     --project-id <project_id> \
+     --session-id <old_session_uuid> \
+     --new-id <new_session_uuid> \
+     --reason "<Brief reason, e.g., 上下文爆炸重新拉起/技术路线重构>"
+   ```
 
 ## Review And Integration
 
@@ -205,15 +224,26 @@ When a provider reports completion or presents a reviewable diff:
    reusable delegation gap, update this skill or its provider profile as well
    as the active task.
 8. Commit only after primary-agent review and verification.
-9. Remove completed worktrees and sessions only after their diff is accepted,
-   intentionally discarded, or preserved elsewhere. Keep required audit
-   artifacts. Update the dashboard session status to `completed` upon acceptance:
-   ```bash
-   python3 /home/wangchao/github/research-dashboard/scripts/session.py status \
-     --project-id <project_id> \
-     --session-id <session_uuid> \
-     --status completed
-   ```
+9. **Session & Tmux Teardown Protocol (终端非存储，验收即销毁)**:
+   - **Tmux is an ephemeral runtime, NOT durable evidence (产物即证据，终端非存储)**:
+     authoritatively audited evidence lives strictly in Git commits, verified logs (`.scratch/agent_logs/<task>/`), and the task deliverable (`.scratch/agent_artifacts/<task>/final_report.md`). Terminal scrollback is ephemeral, non-reproducible, and easily lost.
+   - **Prohibit lingering zombie sessions**: keeping worker tmux sessions open indefinitely after primary acceptance under the guise of "audit preservation" creates severe user confusion (users seeing 'completed' on the dashboard while tmux processes linger, suspecting runaway loops or token burn) and clutters system resources.
+   - **Mandatory 3-step completion teardown**:
+     1. Once the primary agent has reviewed the diff, executed verification checks, and accepted/committed the result into the project baseline, immediately terminate the worker tmux session:
+        ```bash
+        tmux kill-session -t <worker_tmux_session>
+        ```
+     2. In the research dashboard session registry, set `status` to `completed` and **clear `tmux_session` to `null`** (either directly in `data/projects/<project_id>.json` or via `session.py record --parent <parent_id> --title "<title>" --status completed --clear-tmux`):
+        ```bash
+        python3 /home/wangchao/github/research-dashboard/scripts/session.py record \
+          --project <project_id> \
+          --parent <parent_session_id> \
+          --title "<Task Title>" \
+          --status completed \
+          --clear-tmux
+        ```
+     3. Retain only permanent deliverables: `artifact` and `worktree_path` (if the worktree is kept for inspection). The dashboard will display `已完成` and `产物 📋` without any lingering `tmux: ... 📋` button.
+     4. Remove completed worktrees only after their diff is accepted, intentionally discarded, or preserved elsewhere. Keep required audit artifacts.
 
 Once the declared acceptance checks and primary review pass, integrate and
 report. Repeat or broaden verification only for new changes, failures, or a

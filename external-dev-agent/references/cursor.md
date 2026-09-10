@@ -34,3 +34,11 @@ tmux pipe-pane -t <project>-cursor-<task> -o \
 Cursor may run with broad CLI permissions inside the assigned worktree, but it
 must not commit, push, modify sibling repositories, or place review artifacts
 outside the task worktree.
+
+## Teardown
+
+Upon primary-agent review and acceptance, immediately destroy the tmux session:
+```bash
+tmux kill-session -t <project>-cursor-<task>
+```
+Do not keep completed Cursor tmux sessions alive after work is accepted into the baseline.
