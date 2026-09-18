@@ -1,7 +1,8 @@
 # Codex DeepSeek Provider Profile
 
-Preferred DeepSeek development provider. Use Codex with the local profile
-overlay `~/.codex/deepseek.config.toml` via `-p deepseek`.
+Preferred provider within the DeepSeek family (not the global default). Use
+Codex with the local profile overlay `~/.codex/deepseek.config.toml` via
+`-p deepseek`.
 
 Do not use plain `codex` for DeepSeek work: that keeps the default OpenAI
 auth/model path. Do not launch DeepSeek Harness `dsh` for new tasks; see

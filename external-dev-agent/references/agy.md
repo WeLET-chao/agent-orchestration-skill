@@ -1,6 +1,9 @@
 # Antigravity Provider Profile
 
-Use `agy` for Gemini-backed implementation or review. Verify currently
+Use `agy` for Gemini-backed implementation or review. Prefer Gemini via `agy`
+for UI/frontend visual design and multimodal visual review. For visual review,
+prefer a Gemini Flash model when the launcher supports an explicit compatible
+choice; do not silently switch a user-selected model. Verify currently
 available model names with `agy models`; availability and account eligibility
 can change.
 

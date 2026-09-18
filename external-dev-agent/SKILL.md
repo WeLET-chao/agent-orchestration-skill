@@ -27,15 +27,31 @@ runtime adapters that invoke models inside a product or experiment.
 
 ## Provider Selection
 
-Choose a provider deliberately. Establish that the selected CLI works before
-assigning a long task, using a smoke test or reusable verification evidence as
-specified by its profile. Do not silently replace a requested provider.
+Choose a provider deliberately using this ordered preference unless the user
+names a provider or model:
+
+1. Prefer Cursor for general programming, backend, tests, automation, and
+   ordinary documentation implementation.
+2. Prefer Gemini via `agy` for UI/frontend visual design and multimodal visual
+   review. For visual review, prefer a Gemini Flash model when the launcher
+   supports an explicit compatible choice; do not silently switch a
+   user-selected model.
+3. Use another provider only when the user explicitly chooses it, the preferred
+   provider lacks a required capability, or an evidenced availability failure
+   blocks it. Record the reason; never silently substitute.
+
+Do not make Gemini the default for non-visual backend work. Do not claim Cursor
+or Gemini availability without checking it at dispatch time.
+
+Establish that the selected CLI works before assigning a long task, using a
+smoke test or reusable verification evidence as specified by its profile. Do
+not silently replace a requested provider.
 
 | Provider | Typical use | Required reference |
 | --- | --- | --- |
-| Cursor `agent` | General interactive implementation | [references/cursor.md](references/cursor.md) |
-| Codex `codex -p deepseek` | Preferred DeepSeek interactive implementation or bounded review | [references/codex-deepseek.md](references/codex-deepseek.md) |
-| Antigravity `agy` | Gemini implementation/review, including visual work | [references/agy.md](references/agy.md) |
+| Cursor `agent` | Default for general interactive implementation | [references/cursor.md](references/cursor.md) |
+| Codex `codex -p deepseek` | DeepSeek-family interactive implementation or bounded review (not the global default) | [references/codex-deepseek.md](references/codex-deepseek.md) |
+| Antigravity `agy` | Default for Gemini UI/visual design and multimodal visual review; also other Gemini implementation/review | [references/agy.md](references/agy.md) |
 | Claude, OpenCode, Copilot | Bounded implementation or review | [references/other-clis.md](references/other-clis.md) |
 | DeepSeek Harness `dsh` (deprecated) | Legacy recovery only; do not start new DeepSeek tasks | [references/dsh.md](references/dsh.md) |
 
