@@ -7,6 +7,9 @@ choice; do not silently switch a user-selected model. Verify currently
 available model names with `agy models`; availability and account eligibility
 can change.
 
+Start cwd / `--workdir` = **task root** (`impl` worktree, `review` path, or
+`case-run` case workspace). See `SKILL.md` task classes.
+
 ## TTY Requirement
 
 `agy --print` requires a pseudo-TTY on this host. A pipe or ordinary redirected
@@ -19,14 +22,14 @@ bash "$SKILL/scripts/run_agy_print.sh" \
   --model gemini-3.8-flash-high \
   --effort high \
   --timeout 12m \
-  --workdir <worktree> \
+  --workdir <task-root> \
   --out .scratch/agent_artifacts/<task>/response.txt \
   --log .scratch/agent_logs/<task>/agy.tty
 ```
 
 The wrapper adds `--dangerously-skip-permissions` for headless operation and
 preserves the pseudo-TTY transcript. Keep output and logs in the assigned
-worktree.
+**task root**.
 
 Relative prompt, output, log, and additional-directory paths resolve from
 `--workdir`, not the shell that launches the wrapper. Supply exactly one `-p` or
@@ -46,10 +49,38 @@ Wrapper regression check (fake CLI, no provider calls): run
 the actual PTY wrapper, argument/path handling, file preservation, failure exit
 codes, and timeout evidence.
 
-For an interactive development session, run `agy` in tmux with the task's
-authorized permission mode, submit the task-packet bootstrap after the TUI is
-ready, and record the exact model and effort separately from the `agy`
-launcher identity.
+## Interactive By Task Class
+
+**impl** (writable worktree):
+
+```bash
+tmux new-session -d -s <project>-agy-<task> -c <worktree> \
+  'agy --model <model> --effort high --mode accept-edits --dangerously-skip-permissions'
+```
+
+**review** (no new worktree; hard plan mode required):
+
+```bash
+tmux new-session -d -s <project>-agy-<task> -c <task-root> \
+  'agy --model gemini-3.8-flash-high --effort high --mode plan --dangerously-skip-permissions'
+```
+
+`--mode plan` reduces native edit tools; the packet must still forbid writes
+outside `.scratch/`. Shell can still mutate files — primary verifies `git status`
+afterward. Prefer a clean tree (see `SKILL.md` review rules).
+
+**case-run** (cwd = case workspace):
+
+```bash
+tmux new-session -d -s recon-<case-slug>-agy-<task> -c <case-workspace> \
+  'agy --model <model> --effort high --mode accept-edits --dangerously-skip-permissions'
+```
+
+Do **not** treat `--add-dir <framework>` as read-only. Put framework paths in the
+packet for invocation only. Teardown: fail if `git -C <framework>` is dirty.
+
+Submit the task-packet bootstrap after the TUI is ready. Record the exact model
+and effort separately from the `agy` launcher identity.
 
 Do not label a result merely `Gemini`. Record the launcher/channel (`agy`) and
 the selected model/effort. Account eligibility, quota, and region failures are

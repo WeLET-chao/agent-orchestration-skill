@@ -37,7 +37,7 @@ record when those inputs are unchanged. Re-check after a Codex upgrade,
 profile/catalog/credential change, host change, or a failure that calls the
 previous result into question.
 
-## Interactive Development
+## Interactive Development (`impl`)
 
 ```bash
 tmux new-session -d -s <project>-codex-ds-<task> -c <worktree> \
@@ -47,8 +47,11 @@ tmux new-session -d -s <project>-codex-ds-<task> -c <worktree> \
 `--dangerously-bypass-approvals-and-sandbox` matches the skill's interactive
 full-auto posture: approvals skipped inside the assigned session. Prefer a
 narrower sandbox (`-s workspace-write -a never`) when the task packet does not
-require unrestricted writes. Use `--add-dir /exact/path` only when the packet
-assigns that additional root.
+require unrestricted writes.
+
+**`--add-dir` expands the writable workspace** (not read-only). Use it only when
+the packet assigns that additional root as an intentional write root — never as
+a “read-only skills path” for **case-run**.
 
 Wait for the Codex input prompt, then send the short task-packet bootstrap and
 a separate Enter. Confirm model or tool activity. Text left in the input box is
@@ -64,15 +67,21 @@ codex -p deepseek exec --skip-git-repo-check -C <worktree> \
   'Read .scratch/agent_prompts/<task>.md and execute it. Do not commit or push.'
 ```
 
-Read-only review:
+Read-only **review** (required sandbox):
 
 ```bash
-codex -p deepseek exec --skip-git-repo-check -C <worktree> \
+codex -p deepseek exec --skip-git-repo-check -C <task-root> \
   -s read-only -a never \
-  'Read the assigned review packet and return the requested result. Do not edit files.'
+  'Read the assigned review packet and return the requested result. Do not edit files outside .scratch/agent_artifacts/.'
 ```
 
-Resume only with the same objective, worktree, and permission scope:
+Interactive review likewise requires `-s read-only` (or equivalent), not
+`--dangerously-bypass-approvals-and-sandbox`.
+
+**case-run:** `-C <case-workspace>`; do not `--add-dir` a shared framework for
+“RO”. Teardown must verify the framework checkout is clean.
+
+Resume only with the same objective, task root, and permission scope:
 
 ```bash
 codex -p deepseek resume --last
@@ -80,7 +89,7 @@ codex -p deepseek resume --last
 
 Record the session ID, profile (`deepseek`), model/provider evidence, permission
 mode, and log path in task-local audit artifacts. Do not use resume to change
-the task objective or worktree.
+the task objective or task root.
 
 ## Logging
 
@@ -90,6 +99,6 @@ tmux pipe-pane -t <project>-codex-ds-<task> -o \
   'cat >> .scratch/agent_logs/<task>/codex-deepseek-$(date +%Y%m%d-%H%M%S).log'
 ```
 
-Codex may write inside the assigned worktree, but it must not commit, push,
-modify sibling repositories, or place review artifacts outside the task
-worktree.
+Codex may write inside the assigned **task root** per sandbox, but it must not
+commit, push, modify sibling repositories, or place review artifacts outside the
+packet write allowlist.

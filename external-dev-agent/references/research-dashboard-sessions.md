@@ -2,7 +2,7 @@
 
 Use this reference **only** when the workstream is tracked on
 `research-dashboard`. Otherwise skip every step here; the main skill's
-worktree / tmux / artifact rules still apply.
+task-root / tmux / artifact rules still apply.
 
 Script root (adjust if your checkout differs):
 
@@ -13,7 +13,8 @@ Script root (adjust if your checkout differs):
 ## Register Or Update On Start
 
 After the worker is launched and you have a provider session ID (when
-available), tmux pane, worktree path, and resume command:
+available), tmux pane, **task root** (impl worktree, review path, or case
+workspace), and resume command:
 
 ```bash
 python3 /home/wangchao/github/research-dashboard/scripts/session.py record \
@@ -22,11 +23,15 @@ python3 /home/wangchao/github/research-dashboard/scripts/session.py record \
   --session-id <session_uuid> \
   --title "<Concise Chinese Task Title>" \
   --resume-cmd "<Exact resume command, e.g. codex resume <id>>" \
-  --repo-path "<worktree or repo path>" \
+  --repo-path "<task-root: worktree | review path | case workspace>" \
   --tmux "<tmux_session:window.pane>" \
   --milestone-id <milestone_id> \
   --status working
 ```
+
+Prefer recording the concrete **task root**. For **impl**, that is the git
+worktree path (historically `worktree_path`). For **case-run**, use the case
+workspace path — not a framework-repo worktree invented for the case.
 
 ## Status While Awaiting Primary Review
 
@@ -53,10 +58,10 @@ python3 /home/wangchao/github/research-dashboard/scripts/session.py supersede \
 
 ## Complete And Clear Tmux On Acceptance
 
-After primary review, verification, commit, and `tmux kill-session` (mandatory
-in the main skill), update the registry: set `status` to `completed` and
-**clear `tmux_session` to `null`** (either directly in
-`data/projects/<project_id>.json` or via `session.py`):
+After primary review, verification, commit (when **impl**), and
+`tmux kill-session` (mandatory in the main skill), update the registry: set
+`status` to `completed` and **clear `tmux_session` to `null`** (either directly
+in `data/projects/<project_id>.json` or via `session.py`):
 
 ```bash
 python3 /home/wangchao/github/research-dashboard/scripts/session.py record \
@@ -68,7 +73,7 @@ python3 /home/wangchao/github/research-dashboard/scripts/session.py record \
 ```
 
 Retain only permanent deliverables in the registry fields: `artifact` and
-`worktree_path` (if the worktree is kept for inspection). The dashboard should
+`worktree_path` / task-root path (if kept for inspection). The dashboard should
 then show `已完成` and `产物 📋` without a lingering `tmux: ... 📋` button.
 
 Leaving worker tmux running after acceptance while the dashboard already shows
