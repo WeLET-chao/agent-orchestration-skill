@@ -13,15 +13,13 @@ sessions, git worktrees, audit logs, and review checkpoints.
 
 | Skill | Purpose |
 |-------|---------|
-| `external-dev-agent` | Supervise Cursor, Dsh, agy, Claude, OpenCode, or Copilot through one task-packet/worktree/tmux/review workflow with provider profiles |
+| `external-dev-agent` | Supervise Cursor, Codex DeepSeek, agy, Claude, OpenCode, or Copilot through one task-packet/worktree/tmux/review workflow with provider profiles |
 | `cursor-ide-dev-agent` | Coordinate manual Cursor IDE agent sessions with paste-ready task packets when CLI/tmux orchestration is unavailable |
-| `claude-dev-agent` | Supervise Claude Code CLI as an implementation subagent (tmux/headless, worktrees, audit, no-commit guardrails) |
 
 Use `external-dev-agent` for CLI-driven implementation or review. Select its
-Cursor, Dsh, agy, Claude, OpenCode, or Copilot provider profile while retaining
-one common task-packet and primary-review lifecycle. Use `cursor-ide-dev-agent`
-when the user opens or continues Cursor IDE sessions manually. Use
-`claude-dev-agent` only for its existing Claude-specific workflow.
+provider profile while retaining one common task-packet and primary-review
+lifecycle. Use `cursor-ide-dev-agent` when the user opens or continues Cursor
+IDE sessions manually.
 
 ## Quick start
 
@@ -44,9 +42,6 @@ agent-orchestration/
     references/           # provider profiles and task-packet contract
     scripts/              # provider-specific deterministic wrappers
   cursor-ide-dev-agent/
-    SKILL.md
-    agents/openai.yaml
-  claude-dev-agent/
     SKILL.md
     agents/openai.yaml
 ```

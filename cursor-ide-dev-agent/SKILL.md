@@ -10,7 +10,7 @@ started manually by the user**, especially when Cursor CLI, tmux, or headless
 agent orchestration is unavailable.
 
 Do not use this skill to start `agent` CLI sessions. For tmux/CLI delegation,
-use `cursor-dev-agent` instead.
+use `external-dev-agent` instead.
 
 ## Operating Model
 

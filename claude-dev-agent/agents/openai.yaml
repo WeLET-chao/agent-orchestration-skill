@@ -1,4 +1,0 @@
-interface:
-  display_name: "Claude Dev Agent"
-  short_description: "Run Claude Code as a supervised coding subagent"
-  default_prompt: "Use $claude-dev-agent to start a supervised Claude development task in tmux."

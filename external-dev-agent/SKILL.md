@@ -76,13 +76,21 @@ Before delegation:
 6. For externally defined behavior, record the normative source and version,
    real verification environment, and a negative conformance check when
    practical. Local examples are corroborating evidence, not authority.
-7. For a new implementation task, create one branch/worktree. For a continuation
+7. Resolve the owning repository's worktree root before creating anything.
+   Use the repository-defined root when present; otherwise use
+   `<repository-parent>/worktrees/<repository-name>/<task-slug>`. Do not create
+   new task worktrees as siblings of the primary checkout or under a
+   tool-specific global worktree directory. Confirm the target path does not
+   exist and the branch is not already checked out. Existing legacy worktrees
+   are not moved automatically: reuse an active or dirty task worktree until
+   its diff and evidence are reviewed, then remove or migrate it deliberately.
+8. For a new implementation task, create one branch/worktree. For a continuation
    of the same task, inspect its existing diff, evidence, and live jobs and reuse
    the assigned worktree. Multiple agents must never edit the same worktree.
-8. Create the task packet described in
+9. Create the task packet described in
    [references/task-packet.md](references/task-packet.md). Name a concrete hard
    stop and reviewable outputs.
-9. Create task-local logs and artifact directories, normally:
+10. Create task-local logs and artifact directories, normally:
    `.scratch/agent_logs/<task>/` and `.scratch/agent_artifacts/<task>/`.
 
 ## Start And Submit
@@ -112,19 +120,10 @@ condition. Attach logging before submitting the task so startup failures are
 captured. For headless runs, record the process exit status; for interactive
 runs, task completion does not require the TUI process to exit.
 
-When the task corresponds to a project tracked on the research dashboard, register or update the session in the dashboard's session registry:
-```bash
-python3 /home/wangchao/github/research-dashboard/scripts/session.py record \
-  --project-id <project_id> \
-  --provider <codex|cursor|claude|agy|opencode> \
-  --session-id <session_uuid> \
-  --title "<Concise Chinese Task Title>" \
-  --resume-cmd "<Exact resume command, e.g. codex resume <id>>" \
-  --repo-path "<worktree or repo path>" \
-  --tmux "<tmux_session:window.pane>" \
-  --milestone-id <milestone_id> \
-  --status working
-```
+If this workstream is tracked on research-dashboard, follow
+[references/research-dashboard-sessions.md](references/research-dashboard-sessions.md)
+for register / supersede / complete. Otherwise skip session registry entirely;
+still kill tmux and keep worktree artifacts after acceptance.
 
 ## Supervision
 
@@ -144,10 +143,9 @@ python3 /home/wangchao/github/research-dashboard/scripts/session.py record \
   reasonable intervals. Distinguish working, waiting for input, failed, ready
   for primary review, and accepted. An idle prompt or a provider's "done" message
   alone cannot establish acceptance. When a worker finishes its run and stops at
-  the task packet's hard stop, it is `ready for primary review` (awaiting review).
-  Do NOT mark the session as `completed` on the dashboard while it is merely
-  paused awaiting review. Do not keep completed or abandoned worker tmux sessions
-  running indefinitely under the guise of "audit preservation".
+  the task packet's hard stop, it is `ready for primary review` (awaiting review);
+  do not treat that state as accepted. Do not keep completed or abandoned worker
+  tmux sessions running indefinitely under the guise of "audit preservation".
 - If a session remains in repeated planning after it has enough evidence and a
   concrete design, send one bounded steering instruction to begin the edits and
   remain within the task packet. If it still repeats the plan, inspect whether
@@ -207,14 +205,9 @@ When replacing an abandoned or context-overflowed session:
    ```bash
    tmux kill-session -t <old_tmux_session_name>
    ```
-2. Do not delete the old session from the dashboard. Mark it as superseded to preserve historical provenance, and ensure its `tmux_session` is cleared to `null`:
-   ```bash
-   python3 /home/wangchao/github/research-dashboard/scripts/session.py supersede \
-     --project-id <project_id> \
-     --session-id <old_session_uuid> \
-     --new-id <new_session_uuid> \
-     --reason "<Brief reason, e.g., 上下文爆炸重新拉起/技术路线重构>"
-   ```
+2. If the workstream is tracked on research-dashboard, supersede the old session
+   per [references/research-dashboard-sessions.md](references/research-dashboard-sessions.md).
+   Otherwise skip registry updates.
 
 ## Review And Integration
 
@@ -243,22 +236,14 @@ When a provider reports completion or presents a reviewable diff:
 9. **Session & Tmux Teardown Protocol (终端非存储，验收即销毁)**:
    - **Tmux is an ephemeral runtime, NOT durable evidence (产物即证据，终端非存储)**:
      authoritatively audited evidence lives strictly in Git commits, verified logs (`.scratch/agent_logs/<task>/`), and the task deliverable (`.scratch/agent_artifacts/<task>/final_report.md`). Terminal scrollback is ephemeral, non-reproducible, and easily lost.
-   - **Prohibit lingering zombie sessions**: keeping worker tmux sessions open indefinitely after primary acceptance under the guise of "audit preservation" creates severe user confusion (users seeing 'completed' on the dashboard while tmux processes linger, suspecting runaway loops or token burn) and clutters system resources.
-   - **Mandatory 3-step completion teardown**:
+   - **Prohibit lingering zombie sessions**: keeping worker tmux sessions open indefinitely after primary acceptance under the guise of "audit preservation" confuses users (suspected runaway loops or token burn) and clutters system resources.
+   - **Mandatory completion teardown**:
      1. Once the primary agent has reviewed the diff, executed verification checks, and accepted/committed the result into the project baseline, immediately terminate the worker tmux session:
         ```bash
         tmux kill-session -t <worker_tmux_session>
         ```
-     2. In the research dashboard session registry, set `status` to `completed` and **clear `tmux_session` to `null`** (either directly in `data/projects/<project_id>.json` or via `session.py record --parent <parent_id> --title "<title>" --status completed --clear-tmux`):
-        ```bash
-        python3 /home/wangchao/github/research-dashboard/scripts/session.py record \
-          --project <project_id> \
-          --parent <parent_session_id> \
-          --title "<Task Title>" \
-          --status completed \
-          --clear-tmux
-        ```
-     3. Retain only permanent deliverables: `artifact` and `worktree_path` (if the worktree is kept for inspection). The dashboard will display `已完成` and `产物 📋` without any lingering `tmux: ... 📋` button.
+     2. If the workstream is tracked on research-dashboard, mark the session completed and clear `tmux_session` per [references/research-dashboard-sessions.md](references/research-dashboard-sessions.md). Otherwise skip registry updates.
+     3. Retain permanent deliverables in the worktree: verified logs and `.scratch/agent_artifacts/<task>/` (and the worktree itself if kept for inspection).
      4. Remove completed worktrees only after their diff is accepted, intentionally discarded, or preserved elsewhere. Keep required audit artifacts.
 
 Once the declared acceptance checks and primary review pass, integrate and
