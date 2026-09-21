@@ -78,6 +78,9 @@ Use this structure, omitting sections that genuinely do not apply:
 - Negative/mutation check for a named correctness invariant when needed
 - Exact task-local output paths
 - case-run teardown: `git -C <shared-framework> diff --quiet` and clean `status --porcelain`
+- case-run (paper-ls): also
+  `check_case_run_acceptance.py --workspace … --final-report … --framework …`
+  (hard-fail on path_selection / broken links / missing outcome)
 
 ## Final Report
 - Files changed (impl) or artifacts written (review/case-run)

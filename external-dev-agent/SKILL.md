@@ -284,7 +284,19 @@ When a provider reports completion or presents a reviewable diff:
 1. Read its final report and audit log.
 2. Inspect `git status --short`, `git diff --stat`, and the actual diff on the
    **task root** and, for **case-run**, on every **shared framework** path named
-   in the packet (teardown cleanliness is mandatory).
+   in the packet (teardown cleanliness is mandatory). For **case-run** paper-ls
+   reconstructions, also run hard-fail acceptance before treating the pack as
+   done:
+   ```bash
+   python3 "$PAPER_LS/paper-ls-reproduce-from-pdf/scripts/check_case_run_acceptance.py" \
+     --workspace <case-workspace> \
+     --final-report <case>/.scratch/agent_artifacts/<task>/final_report.md \
+     --framework <paper-ls-reconstruction-root>
+   ```
+   Fail the task on non-zero exit (path_selection / broken report links /
+   missing outcome / dirty framework). Prefer linking
+   `transcription/path_selection.json` in the final report over restating
+   `chosen=`.
 3. Trace external mappings and protocol assumptions to their normative source.
 4. Verify according to the task type. For implementation, run the focused checks
    needed to establish the changed behavior; use negative checks for concrete
